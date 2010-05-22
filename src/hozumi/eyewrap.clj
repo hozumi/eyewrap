@@ -328,10 +328,6 @@
 					   (assoc option-map# :1line true))
 			     ope-set# (difference (set (keys option-map#))
 						  #{:v :all :pp :1line :nth :s history-key#})]
-			 (doseq [id# node-ids#]
-			   (if (<= 2 (count node-ids#))
-			     (println (apply str (repeat 100 "="))))
-			   (print-node @~mem id# option-map#))
 			 (doseq [opt# ope-set#]
 			   (condp = opt#
 			     :i (pprint @~mem)
@@ -343,7 +339,12 @@
 :number (e.g. :1, :2, :3..)  - print old trace log.
 :all - print all trace log.
 :i - print internal data.
-:c - clear cache."))))))
+:c - clear cache.")))
+			 (doseq [id# node-ids#]
+			   (if (<= 2 (count node-ids#))
+			     (println (apply str (repeat 100 "="))))
+			   (print-node @~mem id# option-map#))
+			 )))
 	  ~(let [expanded (macroexpand-all form)
 		 fs (first expanded)
 		 se (second expanded)
