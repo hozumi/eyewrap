@@ -65,22 +65,22 @@
 
 (defmacro memo-calc
   [mem form v parent-id-sym]
-  `(let [[catched-v# err-flag#] (try [~v false]
-				 (catch java.lang.Exception e#
-				   [e# true]))
+  `(let [catched-v# (try ~v
+			 (catch java.lang.Exception e#
+			   e#))
 	 {id# :maxid} (swap! ~mem allocate-id ~form ~parent-id-sym)]
      (swap! ~mem update-mem catched-v# id#)
-     (if err-flag#
+     (if (instance? java.lang.Exception catched-v#)
        (throw catched-v#)
        catched-v#)))
 
 (defmacro memo-calc-existing-id
   [mem v id-sym]
-  `(let [[catched-v# err-flag#] (try [~v false]
-				     (catch java.lang.Exception e#
-				       [e# true]))]
+  `(let [catched-v# (try ~v
+			 (catch java.lang.Exception e#
+			   e#))]
      (swap! ~mem update-mem catched-v# ~id-sym)
-     (if err-flag#
+     (if (instance? java.lang.Exception catched-v#)
        (throw catched-v#)
        catched-v#)))
 
