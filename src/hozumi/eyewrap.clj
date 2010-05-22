@@ -256,7 +256,11 @@
 									      (repeat (if (:v style) 10 6) " ")
 									      (repeat level "  "))))))))
 	    (:1line style) (do (printf "%-2d:%s%2s %s" level idstring typ (apply str (repeat level "  ")))
-			       (println form)))))
+			       (cond
+				(or (= nil form)
+				    (and (coll? form) (empty? form))
+				    (= (type form) clojure.lang.LazySeq)) (println form)
+				:else  (println (.toString form)))))))
        (print-node1
 	[{:keys [id form out child]} level]
 	(cond (= form out) ::const
