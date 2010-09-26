@@ -237,7 +237,9 @@
       [(lazy-chked-v
 	[out]
 	(if (= clojure.lang.LazySeq (type out))
-	  (let [data (take (+ 1 *max-print-size*) out)]
+	  (let [data (map #(try % (catch java.lang.Exception e e))
+			  (take (+ 1 *max-print-size*)
+				       out))]
 	    (if (= (+ 1 *max-print-size*) (count data))
 	      (concat data ['...LazySeq...])
 	      data))
@@ -263,24 +265,24 @@
 				:else  (println (.toString form)))))))
        (print-node1
 	[{:keys [id form out child]} level]
-	(cond (= form out) ::const
-	      (ref-or-atom? out) (.toString out)
-	      (elem? form) out
-	      :else (do (my-print level "+" form id)
-			(let [uptodate-form (atom form)
-			      limited-size-v (lazy-chked-v out)
-			      my-childs (reverse (vals child))]
-			  (if (not (:s style))
-			    (doseq [{cform :form, cout :out, child-childs :child, :as achild} my-childs]
-			      (let [child-out (print-node1 achild (inc level))]
-				(if (and (not= ::const child-out)
-					 (not (fn? child-out)))
-				  (my-print level "->"
-					    (swap! uptodate-form
-						   #(replace1 cform child-out %))
-					    id)))))
-			  (my-print level "=>" limited-size-v id)
-			  limited-size-v))))]
+	(let [chked-out (lazy-chked-v out)]
+	  (cond (= form chked-out) ::const
+		(ref-or-atom? chked-out) (.toString chked-out)
+		(elem? form) chked-out
+		:else (do (my-print level "+" form id)
+			  (let [uptodate-form (atom form)
+				my-childs (reverse (vals child))]
+			    (if (not (:s style))
+			      (doseq [{cform :form, cout :out, child-childs :child, :as achild} my-childs]
+				(let [child-out (print-node1 achild (inc level))]
+				  (if (and (not= ::const child-out)
+					   (not (fn? child-out)))
+				    (my-print level "->"
+					      (swap! uptodate-form
+						     #(replace1 cform child-out %))
+					      id)))))
+			    (my-print level "=>" chked-out id)
+			  chked-out)))))]
     (let [node (get-in result (get-access-vec parent-table node-id))]
       (if (fn? (get node :out +))
 	(let [child-nodes (-> node :child vals)
