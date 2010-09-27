@@ -206,7 +206,10 @@
 					   ~newid-sym)
 	    'set!  `(memo-calc-existing-id ~mem
 					   ~form
-					   ~newid-sym))))))
+					   ~newid-sym)
+	    `(memo-calc-existing-id ~mem
+				    ~form
+				    ~newid-sym))))))
 
 (defn replace1 [target replaced form]
   (if (fn? replaced)
